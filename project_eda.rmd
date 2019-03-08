@@ -2,34 +2,30 @@ White Wines by Victor Jaen
 ========================================================
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
-# Load all of the packages that you end up using in your analysis in this code
-# chunk.
-library(tidyverse)
 
-
-
-# Notice that the parameter "echo" was set to FALSE for this code chunk. This
-# prevents the code from displaying in the knitted HTML output. You should set
-# echo=FALSE for all code chunks in your file, unless it makes sense for your
-# report to show the code that generated a particular plot.
-
-# The other parameters for "message" and "warning" should also be set to FALSE
-# for other code chunks once you have verified that each plot comes out as you
-# want it to. This will clean up the flow of your report.
-
+# Loading libraries
+library(tidyverse) #this one auomatically loads ggplot and dplyr
 library(ggplot2)
+library(dplyr)
+
+## A note on syntaxis: I will be using mainly data pipes in constructing my
+## plots. I know this wasnt really shown in the course but I found it easier
+## to understand and work with too.
+
 ```
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
-setwd("C:/Users/Victor/Desktop/NAND/EDA/Final_Project")
-dir()
+setwd("C:/Users/Victor/Desktop/NAND/EDA/Final_Project") #<- Delete before Knittting
 df <- read.csv("wineQualityWhites.csv")
 ```
 
-> **Tip**: Before you create any plots, it is a good idea to provide a short
-introduction into the dataset that you are planning to explore. Replace this
-quoted text with that general information!
+This data set contains several metrics about white wines and a qualitative 
+variable that contains the evaluation of the whine by experts. So right from 
+the start most of the analysis will be oriented in trying to identify what
+variables are the most important predictor in wine quality. Besides this we will
+be exploring if within this variable, some relationship exist and hypothesize
+why this could be.
 
 # Univariate Plots Section
 
@@ -41,10 +37,66 @@ There should be multiple code chunks and text sections; the first one below is
 just to help you get started.
 
 ```{r echo=FALSE, Univariate_Plots}
+
 head(df)
 
 
 ```
+First I print the head of the data set to have a quick glance.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+summary(df)
+
+```
+
+We can see that all variables are numerical, and I will probably use them as they are. If the need for a categorical one arises I will create it down the line. The other observation is that they have very different ranges and distributions which is expected given the variety of data we have here. All variables seem to be continuous, except for quality, which seems discrete.
+
+```{r}
+
+df %>% ggplot(aes(x=quality)) + geom_histogram()
+
+
+```
+I was first interested in quality. The distribution is discrete, but this is
+expected since the evaluation was given from a discrete range.
+
+
+
+```{r}
+colnames(df)
+
+df_tidy <- df %>% gather(fixed.acidity,volatile.acidity, citric.acid,
+                        residual.sugar,chlorides,free.sulfur.dioxide,
+                        total.sulfur.dioxide,density,pH,sulphates,alcohol,
+                        quality)
+colnames(df_tidy) <- c("X","key","values")
+head(df_tidy)
+
+rm(df_tidy)
+df_tidy %>% ggplot(aes(x=values)) + geom_histogram(bins=50) + facet_wrap(~key, scales= "free")
+
+df %>% ggplot(aes(x=density)) + geom_histogram()
+
+
+```
+
+I wanted to have quick distribution for all variables. So using the gather
+function from tidy verse, I created a tidy data set to make the plotting easier.
+
+
+
+```{r}
+
+df %>% ggplot(aes(x=residual.sugar)) + geom_histogram(bins = 50)
+df %>% filter(residual.sugar > 5) %>% ggplot(aes(x=residual.sugar)) + geom_histogram(bins = 50)
+
+df %>% ggplot(aes(x=residual.sugar)) + geom_histogram(bins = 50) + scale_x_log10()
+
+
+```
+
+#ANALYZE THE INTERPREATION OF LOGARITMIC SCALE. 
 
 > **Tip**: Make sure that you leave a blank line between the start / end of
 each code block and the end / start of your Markdown text so that it is
@@ -81,6 +133,24 @@ supporting variables. Try to look at relationships between supporting variables
 as well.
 
 ```{r echo=FALSE, Bivariate_Plots}
+df %>% ggplot(aes(x=free.sulfur.dioxide,y=total.sulfur.dioxide)) + geom_jitter(alpha=.5) #also confirming
+df %>% ggplot(aes(x=sulphates,y=total.sulfur.dioxide)) + geom_jitter(alpha=.5)
+
+df %>% ggplot(aes(x=alcohol,y=quality)) + geom_jitter(alpha=.5)
+df %>% ggplot(aes(x=fixed.acidity,y=quality)) + geom_jitter(alpha=.5)
+df %>% ggplot(aes(x=alcohol,y=residual.sugar)) + geom_jitter(alpha=.5)
+
+df %>% ggplot(aes(x=alcohol,y=residual.sugar)) + geom_jitter(alpha=.5)
+df %>% ggplot(aes(x=as.factor(quality),y=pH)) + geom_boxplot(alpha=.5) #ineresting
+
+df %>% ggplot(aes(x=fixed.acidity,y=pH)) + geom_point(alpha=.5) + geom_smooth()
+df %>% ggplot(aes(x=volatile.acidity,y=pH)) + geom_point(alpha=.5)
+
+df %>% ggplot(aes(x=as.factor(quality),y=density)) + geom_boxplot(alpha=.5) #the higher de quality the more uniform, could be a function of qty
+
+table(df$quality) #confirming
+
+
 
 ```
 
@@ -109,8 +179,30 @@ you plan on creating any mathematical models, this is the section where you
 will do that.
 
 ```{r echo=FALSE, Multivariate_Plots}
+df%>% ggplot(aes(x=alcohol,y=residual.sugar)) + geom_jitter(aes(color=quality),alpha=0.3)
+df%>% ggplot(aes(x=alcohol,y=density)) + geom_jitter(aes(color=quality),alpha=0.3)
+df%>% filter(density <= 1.02) %>% ggplot(aes(x=alcohol,y=density)) + geom_jitter(aes(color=quality),alpha=0.3)
+
+#create another column for above 7 and below 7.
+df_g<- df%>% mutate(quality_groups = ifelse(quality>=7,'good','not_good'))
+
+df_g%>% filter(density <= 1.02) %>% ggplot(aes(x=alcohol,y=density)) + geom_jitter(aes(color=quality_groups),alpha=0.3)
+df_g%>% ggplot(aes(x=citric.acid,y=alcohol)) + geom_jitter(aes(color=quality_groups),alpha=0.3)
+
 
 ```
+
+```{r}
+
+df_g%>% ggplot(aes(x=sulphates,y=chlorides)) + geom_jitter(aes(color=quality_groups),alpha=0.3)
+
+df_g%>% ggplot(aes(x=sulphates,y=residual.sugar)) + geom_jitter(aes(color=quality_groups),alpha=0.3)
+
+
+
+```
+
+
 
 # Multivariate Analysis
 
