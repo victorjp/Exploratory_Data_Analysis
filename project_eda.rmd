@@ -58,51 +58,63 @@ df %>% ggplot(aes(x=quality)) + geom_histogram()
 
 
 ```
+
 I was first interested in quality. The distribution is discrete, but this is
-expected since the evaluation was given from a discrete range.
+expected since the evaluation was given from a discrete range. I will create an
+additional variable which will divide the wine in bad, average, and good based
+on the quality. The ranges will be from 0 to 4, 5 to 7 and then 8 to 10
+respectively.
+
+```{r}
+
+df <-df %>% mutate(quality_group = case_when(quality <= 4 ~ "bad", 
+                                      quality > 4 & quality <=7 ~ "average",
+                                      quality > 7 & quality <=10 ~ "good"))
+
+table(df$quality_group)
+
+```
+
+The majority of the wines are average as shown in the histogram. This will
+help in plotting downstream.
 
 
 
 ```{r}
-colnames(df)
 
+#To create a tidy data set we use the gather function.
 df_tidy <- df %>% gather(fixed.acidity,volatile.acidity, citric.acid,
                         residual.sugar,chlorides,free.sulfur.dioxide,
                         total.sulfur.dioxide,density,pH,sulphates,alcohol,
                         quality)
 colnames(df_tidy) <- c("X","key","values")
-head(df_tidy)
-
-rm(df_tidy)
 df_tidy %>% ggplot(aes(x=values)) + geom_histogram(bins=50) + facet_wrap(~key, scales= "free")
-
-df %>% ggplot(aes(x=density)) + geom_histogram()
 
 
 ```
 
 I wanted to have quick distribution for all variables. So using the gather
 function from tidy verse, I created a tidy data set to make the plotting easier.
-
+Most of the variables seem to be normally distributed. They had different
+spreads and a little bit of skewness, but most seem pretty central. 
+Residual sugar is a little skewed so I will have a look on that one.
 
 
 ```{r}
 
-df %>% ggplot(aes(x=residual.sugar)) + geom_histogram(bins = 50)
-df %>% filter(residual.sugar > 5) %>% ggplot(aes(x=residual.sugar)) + geom_histogram(bins = 50)
-
-df %>% ggplot(aes(x=residual.sugar)) + geom_histogram(bins = 50) + scale_x_log10()
-
+df %>% ggplot(aes(x=log(residual.sugar))) + geom_histogram(bins = 50)
 
 ```
 
-#ANALYZE THE INTERPREATION OF LOGARITMIC SCALE. 
+Using a logarithmic scale we can see actually almost two distributions with 
+a peak close to 0. We are going to have a closer look to this phenomena in
+the coming sections.
 
-> **Tip**: Make sure that you leave a blank line between the start / end of
-each code block and the end / start of your Markdown text so that it is
-formatted nicely in the knitted text. Note as well that text on consecutive
-lines is treated as a single space. Make sure you have a blank line between
-your paragraphs so that they too are formatted for easy readability.
+
+
+
+
+
 
 # Univariate Analysis
 
@@ -112,47 +124,71 @@ gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
 
+Is mostly of numeric variables, most of them seem to be normally distrbuted 
+with different spreads.
+
 ### What is/are the main feature(s) of interest in your dataset?
 
+If this uniformity is represented with looking a two variables simultaneously
+Is there any sweet spot in this variables explained in good wine quality.
+
 ### What other features in the dataset do you think will help support your \
-investigation into your feature(s) of interest?
+#investigation into your feature(s) of interest?
 
 ### Did you create any new variables from existing variables in the dataset?
 
-### Of the features you investigated, were there any unusual distributions? \
-Did you perform any operations on the data to tidy, adjust, or change the form \
-of the data? If so, why did you do this?
+Yes. I created a factor variable called quality groups that divides the wine
+in three main categories: bad, average and good. This will help identify 
+better trends in the following plots.
 
+### Of the features you investigated, were there any unusual distributions? \
+Not really. Only the residual sugar, a little bit skewed but with a logarithmic
+transformation, we saw that there seems to be to different distributions for 
+that variable.
+
+### Did you perform any operations on the data to tidy, adjust, or change the form \
+### of the data? If so, why did you do this?
+I created a tidy data set to leverage facet_wrap from ggplot and generate
+all the distributions in one line. This tidy data set is call df_tidy.
+Depending on the need I will point out if I need to use it in other plots,
+however most of the analysis will be done on the main one.
 
 # Bivariate Plots Section
 
-> **Tip**: Based on what you saw in the univariate plots, what relationships
-between variables might be interesting to look at in this section? Don't limit
-yourself to relationships between a main output feature and one of the
-supporting variables. Try to look at relationships between supporting variables
-as well.
 
 ```{r echo=FALSE, Bivariate_Plots}
+
 df %>% ggplot(aes(x=free.sulfur.dioxide,y=total.sulfur.dioxide)) + geom_jitter(alpha=.5) #also confirming
-df %>% ggplot(aes(x=sulphates,y=total.sulfur.dioxide)) + geom_jitter(alpha=.5)
 
-df %>% ggplot(aes(x=alcohol,y=quality)) + geom_jitter(alpha=.5)
-df %>% ggplot(aes(x=fixed.acidity,y=quality)) + geom_jitter(alpha=.5)
-df %>% ggplot(aes(x=alcohol,y=residual.sugar)) + geom_jitter(alpha=.5)
+```
 
-df %>% ggplot(aes(x=alcohol,y=residual.sugar)) + geom_jitter(alpha=.5)
-df %>% ggplot(aes(x=as.factor(quality),y=pH)) + geom_boxplot(alpha=.5) #ineresting
 
-df %>% ggplot(aes(x=fixed.acidity,y=pH)) + geom_point(alpha=.5) + geom_smooth()
-df %>% ggplot(aes(x=volatile.acidity,y=pH)) + geom_point(alpha=.5)
+
+```{r}
 
 df %>% ggplot(aes(x=as.factor(quality),y=density)) + geom_boxplot(alpha=.5) #the higher de quality the more uniform, could be a function of qty
 
-table(df$quality) #confirming
+
+```
+
+
+```{r}
+
+df %>% ggplot(aes(x=alcohol,y=residual.sugar)) + geom_jitter(alpha=.5)
 
 
 
 ```
+
+
+
+```{r}
+df %>% ggplot(aes(fill=quality_group,x=log10(residual.sugar))) + geom_histogram() 
+
+
+```
+
+
 
 # Bivariate Analysis
 
