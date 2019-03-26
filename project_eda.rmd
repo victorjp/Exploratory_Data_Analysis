@@ -16,7 +16,8 @@ library(dplyr)
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
-setwd("C:/Users/Victor/Desktop/NAND/EDA/Final_Project") #<- Delete before Knittting
+#setwd("C:/Users/Victor/Desktop/NAND/EDA/Final_Project") #<- Delete before Knittting
+setwd("~/Documents/GitHub/Final_Project") #For Mac
 df <- read.csv("wineQualityWhites.csv")
 ```
 
@@ -52,7 +53,7 @@ summary(df)
 
 We can see that all variables are numerical, and I will probably use them as they are. If the need for a categorical one arises I will create it down the line. The other observation is that they have very different ranges and distributions which is expected given the variety of data we have here. All variables seem to be continuous, except for quality, which seems discrete.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 df %>% ggplot(aes(x=quality)) + geom_histogram()
 
@@ -65,7 +66,7 @@ additional variable which will divide the wine in bad, average, and good based
 on the quality. The ranges will be from 0 to 4, 5 to 7 and then 8 to 10
 respectively.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 df <-df %>% mutate(quality_group = case_when(quality <= 4 ~ "bad", 
                                       quality > 4 & quality <=7 ~ "average",
@@ -80,16 +81,15 @@ help in plotting downstream.
 
 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 #To create a tidy data set we use the gather function.
-df_tidy <- df %>% gather(fixed.acidity,volatile.acidity, citric.acid,
+df_tidy <- df %>% select(-quality_group) %>% gather(fixed.acidity,volatile.acidity, citric.acid,
                         residual.sugar,chlorides,free.sulfur.dioxide,
                         total.sulfur.dioxide,density,pH,sulphates,alcohol,
                         quality)
 colnames(df_tidy) <- c("X","key","values")
-df_tidy %>% ggplot(aes(x=values)) + geom_histogram(bins=50) + facet_wrap(~key, scales= "free")
-
+df_tidy %>% ggplot(aes(x=values)) + geom_histogram(bins = 50) + facet_wrap(~key, scales= "free")
 
 ```
 
@@ -171,15 +171,58 @@ df %>% ggplot(aes(x=as.factor(quality),y=density)) + geom_boxplot(alpha=.5) #the
 
 ```
 
+It seems that the "better" wines have lower density, given the similarity of the
+7 and 8 quality. Im cautious with the 9 boxplot, since it could be
+the result of less samples rather than an actual pattern. Just to confirm if 
+this is the case, I will replicate the graph using the quality_group variable
+created before.
 
 ```{r}
 
-df %>% ggplot(aes(x=alcohol,y=residual.sugar)) + geom_jitter(alpha=.5)
+df %>% ggplot(aes(x=quality_group,y=density)) + geom_boxplot(alpha=.5) #the higher de quality the more uniform, could be a function of qty
+
+
+```
+Yes, it seems that good wines have lower density than other ones.
+
+```{r}
+
+df %>% ggplot(aes(x=sulphates,y=free.sulfur.dioxide)) + geom_jitter(alpha=.5) 
+
+```
+
+```{r}
+
+df %>% ggplot(aes(x=fixed.acidity,y=citric.acid)) + geom_jitter(alpha=.5) 
+
+```
+Looking at the acidity variables, there seems to be some relationship
+between the citric acid and the fixed acidity. Chemically Im not sure what
+could be the mechanism happening behind but this seems to be expected.
+
+```{r}
+df %>% ggplot(aes(x=fixed.acidity,y=pH)) + geom_jitter(alpha=.5) #strongest relationship
+df %>% ggplot(aes(x=citric.acid,y=pH)) + geom_jitter(alpha=.5) 
+df %>% ggplot(aes(x=volatile.acidity,y=pH)) + geom_jitter(alpha=.5) 
 
 
 
 ```
 
+
+
+
+
+```{r}
+
+df %>% ggplot(aes(x=alcohol,y=residual.sugar)) + geom_jitter(alpha=.5)
+
+```
+Finally since Alcohol is the conversion from sugar, I was expecting
+a stronger relationship in residual sugar and alcohol. There seems to be
+a pattern in the max residual sugar the higher the alcohol, but his does 
+not holds true for the minimal levels that seems to be spread out. This also
+could be function of the process used to make the wine.
 
 
 ```{r}
@@ -198,12 +241,19 @@ here. Use the questions below to guide your discussion.
 ### Talk about some of the relationships you observed in this part of the \
 investigation. How did the feature(s) of interest vary with other features in \
 the dataset?
+I didnt want to focus solely on the quality variable and its relationship
+with other ones. Altough I recognize this may be the most important thing to do.
+Having said that, I picked density to 
 
 ### Did you observe any interesting relationships between the other features \
-(not the main feature(s) of interest)?
+The acidity variables seems to have some relationship. However the sulfate
+and sulphates variables does not seem to be related. Finally the residual sugar
+altough is not strongly related to alcohol, we observed a patter where the max
+residual sugar reduces with increasing amounts of alcohol.
 
 ### What was the strongest relationship you found?
-
+Density seems to have an inverse relationship with wine quality. Good wines, 
+above 7, have lower densities than the average and bad wines.
 
 # Multivariate Plots Section
 
@@ -294,6 +344,11 @@ make sure you justify why you chose each plot by describing what it shows.
 the insights you found. What were some of the struggles that you went through?
 What went well? What was surprising? Make sure you include an insight into
 future work that could be done with the dataset.
+Exploring all variables directly with the output variable is not necessary
+the best path always. Understanding relationships between variables could help
+in feature selection, dropping variables that might not be interesting.
+
+
 
 > **Tip**: Don't forget to remove this, and the other **Tip** sections before
 saving your final work and knitting the final report!
