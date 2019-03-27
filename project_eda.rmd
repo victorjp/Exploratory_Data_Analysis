@@ -164,7 +164,7 @@ df %>% ggplot(aes(x=free.sulfur.dioxide,y=total.sulfur.dioxide)) + geom_jitter(a
 
 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 df %>% ggplot(aes(x=as.factor(quality),y=density)) + geom_boxplot(alpha=.5) #the higher de quality the more uniform, could be a function of qty
 
@@ -177,7 +177,7 @@ the result of less samples rather than an actual pattern. Just to confirm if
 this is the case, I will replicate the graph using the quality_group variable
 created before.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 df %>% ggplot(aes(x=quality_group,y=density)) + geom_boxplot(alpha=.5) #the higher de quality the more uniform, could be a function of qty
 
@@ -185,11 +185,16 @@ df %>% ggplot(aes(x=quality_group,y=density)) + geom_boxplot(alpha=.5) #the high
 ```
 Yes, it seems that good wines have lower density than other ones.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-df %>% ggplot(aes(x=sulphates,y=free.sulfur.dioxide)) + geom_jitter(alpha=.5) 
+df %>% ggplot(aes(x=total.sulfur.dioxide,y=sulphates)) + geom_point(alpha=.5)
 
 ```
+Looking at other variables, I was curious if total sulfur dioxide had some
+relationship with Sulphates. In this graphs there seems to be a very weak
+correlation, at least weaker than I expected. (I know chemically they are
+different compounds, but they usually have some relationship)
+
 
 ```{r}
 
@@ -199,39 +204,24 @@ df %>% ggplot(aes(x=fixed.acidity,y=citric.acid)) + geom_jitter(alpha=.5)
 Looking at the acidity variables, there seems to be some relationship
 between the citric acid and the fixed acidity. Chemically Im not sure what
 could be the mechanism happening behind but this seems to be expected.
+Source (https://www.winespectator.com/drvinny/show/id/Difference-Between-Sulfites-Sulfates-Wine-54706)
 
 ```{r}
+
 df %>% ggplot(aes(x=fixed.acidity,y=pH)) + geom_jitter(alpha=.5) #strongest relationship
-df %>% ggplot(aes(x=citric.acid,y=pH)) + geom_jitter(alpha=.5) 
-df %>% ggplot(aes(x=volatile.acidity,y=pH)) + geom_jitter(alpha=.5) 
-
-
 
 ```
-
-
-
-
+Following the same principle of looking at different variables from the 
+output, I wanted to confirm the relationship between pH an acidity. From
+This graph we can show that there is a decent relationship. 
 
 ```{r}
 
-df %>% ggplot(aes(x=alcohol,y=residual.sugar)) + geom_jitter(alpha=.5)
+cor(df$fixed.acidity,df$pH)
 
 ```
-Finally since Alcohol is the conversion from sugar, I was expecting
-a stronger relationship in residual sugar and alcohol. There seems to be
-a pattern in the max residual sugar the higher the alcohol, but his does 
-not holds true for the minimal levels that seems to be spread out. This also
-could be function of the process used to make the wine.
-
-
-```{r}
-df %>% ggplot(aes(fill=quality_group,x=log10(residual.sugar))) + geom_histogram() 
-
-
-```
-
-
+Running the correlation function we see that the value is actually rather low,
+-0.42.
 
 # Bivariate Analysis
 
@@ -243,13 +233,13 @@ investigation. How did the feature(s) of interest vary with other features in \
 the dataset?
 I didnt want to focus solely on the quality variable and its relationship
 with other ones. Altough I recognize this may be the most important thing to do.
-Having said that, I picked density to 
+Having said that, I picked density to see if it showed some relationship
+and it seems it does. Good wines have a lower density distribution than the 
+other wines. 
 
 ### Did you observe any interesting relationships between the other features \
 The acidity variables seems to have some relationship. However the sulfate
-and sulphates variables does not seem to be related. Finally the residual sugar
-altough is not strongly related to alcohol, we observed a patter where the max
-residual sugar reduces with increasing amounts of alcohol.
+and sulphates variables does not seem to be related.
 
 ### What was the strongest relationship you found?
 Density seems to have an inverse relationship with wine quality. Good wines, 
