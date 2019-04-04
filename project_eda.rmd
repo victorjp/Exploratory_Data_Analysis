@@ -16,7 +16,7 @@ library(dplyr)
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
-#setwd("C:/Users/Victor/Desktop/NAND/EDA/Final_Project") #<- Delete before Knittting
+setwd("C:/Users/Victor/Desktop/NAND/EDA/Final_Project") #<- Delete before Knittting
 setwd("~/Documents/GitHub/Final_Project") #For Mac
 df <- read.csv("wineQualityWhites.csv")
 ```
@@ -110,17 +110,7 @@ Using a logarithmic scale we can see actually almost two distributions with
 a peak close to 0. We are going to have a closer look to this phenomena in
 the coming sections.
 
-
-
-
-
-
-
 # Univariate Analysis
-
-> **Tip**: Now that you've completed your univariate explorations, it's time to
-reflect on and summarize what you've found. Use the questions below to help you
-gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
 
@@ -231,6 +221,7 @@ here. Use the questions below to guide your discussion.
 ### Talk about some of the relationships you observed in this part of the \
 investigation. How did the feature(s) of interest vary with other features in \
 the dataset?
+
 I didnt want to focus solely on the quality variable and its relationship
 with other ones. Altough I recognize this may be the most important thing to do.
 Having said that, I picked density to see if it showed some relationship
@@ -238,10 +229,12 @@ and it seems it does. Good wines have a lower density distribution than the
 other wines. 
 
 ### Did you observe any interesting relationships between the other features \
+
 The acidity variables seems to have some relationship. However the sulfate
 and sulphates variables does not seem to be related.
 
 ### What was the strongest relationship you found?
+
 Density seems to have an inverse relationship with wine quality. Good wines, 
 above 7, have lower densities than the average and bad wines.
 
@@ -255,24 +248,22 @@ you plan on creating any mathematical models, this is the section where you
 will do that.
 
 ```{r echo=FALSE, Multivariate_Plots}
-df%>% ggplot(aes(x=alcohol,y=residual.sugar)) + geom_jitter(aes(color=quality),alpha=0.3)
-df%>% ggplot(aes(x=alcohol,y=density)) + geom_jitter(aes(color=quality),alpha=0.3)
-df%>% filter(density <= 1.02) %>% ggplot(aes(x=alcohol,y=density)) + geom_jitter(aes(color=quality),alpha=0.3)
 
-#create another column for above 7 and below 7.
-df_g<- df%>% mutate(quality_groups = ifelse(quality>=7,'good','not_good'))
-
-df_g%>% filter(density <= 1.02) %>% ggplot(aes(x=alcohol,y=density)) + geom_jitter(aes(color=quality_groups),alpha=0.3)
-df_g%>% ggplot(aes(x=citric.acid,y=alcohol)) + geom_jitter(aes(color=quality_groups),alpha=0.3)
-
+df %>% ggplot(aes(x=log10(residual.sugar),y=density)) + geom_point(aes(color=quality_group),alpha=0.2)
 
 ```
 
 ```{r}
 
-df_g%>% ggplot(aes(x=sulphates,y=chlorides)) + geom_jitter(aes(color=quality_groups),alpha=0.3)
+df %>% ggplot(aes(x=sulphates,y=free.sulfur.dioxide)) + facet_wrap(~quality_group) + geom_point()
 
-df_g%>% ggplot(aes(x=sulphates,y=residual.sugar)) + geom_jitter(aes(color=quality_groups),alpha=0.3)
+```
+
+
+
+```{r}
+
+df %>% ggplot(aes(x=log2(chlorides),y=alcohol)) + facet_wrap(~quality_group) + geom_point()
 
 
 
