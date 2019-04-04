@@ -263,9 +263,18 @@ df %>% ggplot(aes(x=sulphates,y=free.sulfur.dioxide)) + facet_wrap(~quality_grou
 
 ```{r}
 
-df %>% ggplot(aes(x=log2(chlorides),y=alcohol)) + facet_wrap(~quality_group) + geom_point()
+df %>% ggplot(aes(x=log2(chlorides),y=alcohol)) + facet_wrap(~quality_group) + geom_jitter()
 
 
+
+```
+
+
+```{r}
+
+df %>% ggplot(aes(x=volatile.acidity,y=alcohol)) + facet_wrap(~quality_group) + geom_jitter()
+
+df %>% ggplot(aes(x=volatile.acidity,y=alcohol,color=quality)) + geom_jitter(alpha=0.2)
 
 ```
 
@@ -276,6 +285,7 @@ df %>% ggplot(aes(x=log2(chlorides),y=alcohol)) + facet_wrap(~quality_group) + g
 ### Talk about some of the relationships you observed in this part of the \
 investigation. Were there features that strengthened each other in terms of \
 looking at your feature(s) of interest?
+
 
 ### Were there any interesting or surprising interactions between features?
 
@@ -325,6 +335,7 @@ make sure you justify why you chose each plot by describing what it shows.
 the insights you found. What were some of the struggles that you went through?
 What went well? What was surprising? Make sure you include an insight into
 future work that could be done with the dataset.
+
 Exploring all variables directly with the output variable is not necessary
 the best path always. Understanding relationships between variables could help
 in feature selection, dropping variables that might not be interesting.
