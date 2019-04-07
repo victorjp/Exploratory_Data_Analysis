@@ -83,7 +83,7 @@ help in plotting downstream.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-#To create a tidy data set we use the gather function.
+#To create a tidy dataset we use the gather function.
 df_tidy <- df %>% select(-quality_group) %>% gather(fixed.acidity,volatile.acidity, citric.acid,
                         residual.sugar,chlorides,free.sulfur.dioxide,
                         total.sulfur.dioxide,density,pH,sulphates,alcohol,
@@ -93,11 +93,11 @@ df_tidy %>% ggplot(aes(x=values)) + geom_histogram(bins = 50) + facet_wrap(~key,
 
 ```
 
-I wanted to have quick distribution for all variables. So using the gather
-function from tidy verse, I created a tidy data set to make the plotting easier.
-Most of the variables seem to be normally distributed. They had different
-spreads and a little bit of skewness, but most seem pretty central. 
-Residual sugar is a little skewed so I will have a look on that one.
+I wanted to have quick distribution of all variables. So using the gather
+function from tidy verse, I created a tidy data set to make the use of
+ggplot easier.Most of the variables seem to be normally distributed. 
+They had different spreads and a little bit of skewness, but most seem pretty 
+central. Residual sugar is a little skewed so I will have a look on that one.
 
 
 ```{r}
@@ -169,11 +169,15 @@ created before.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-df %>% ggplot(aes(x=quality_group,y=density)) + geom_boxplot(alpha=.5) #the higher de quality the more uniform, could be a function of qty
+df %>% ggplot(aes(x=quality_group,y=density)) + geom_boxplot(alpha=.5) 
+# it seems that the higher de quality the more uniform, could be a function of 
+# sample size. There are less "good" quality wines
 
 
 ```
 Yes, it seems that good wines have lower density than other ones.
+An important thing is that this could be result of sample size, there are
+less good quality wines, hence the distribution is more uniform.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -215,8 +219,6 @@ Running the correlation function we see that the value is actually rather low,
 
 # Bivariate Analysis
 
-> **Tip**: As before, summarize what you found in your bivariate explorations
-here. Use the questions below to guide your discussion.
 
 ### Talk about some of the relationships you observed in this part of the \
 investigation. How did the feature(s) of interest vary with other features in \
@@ -247,34 +249,45 @@ create here are justified by the plots you explored in the previous section. If
 you plan on creating any mathematical models, this is the section where you
 will do that.
 
-```{r echo=FALSE, Multivariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
 
-df %>% ggplot(aes(x=log10(residual.sugar),y=density)) + geom_point(aes(color=quality_group),alpha=0.2)
+df %>% ggplot(aes(x=log10(residual.sugar),y=density)) + geom_smooth(aes(color=quality_group)) 
+#+ facet_wrap(~quality_group)
 
 ```
+I was first curios about residual sugar and density since both showed some sort
+of different relationship vs the rest of the variables. Using geom_smooth there
+seems to be some sort of proportional relationship between density and the log 
+of residual sugar, and it seems similar across different wine groups. The fact
+that the average group goes farther is simply more variability within that group.
 
 ```{r}
 
-df %>% ggplot(aes(x=sulphates,y=free.sulfur.dioxide)) + facet_wrap(~quality_group) + geom_point()
+df %>% ggplot(aes(x=fixed.acidity,y=citric.acid,color=pH)) +  geom_jitter(alpha=0.4) + scale_color_gradientn(colours = terrain.colors(10))
 
 ```
-
+Also following up with pH, as expected there is a relationship between both
+acidities and pH. The higher the acidity de lower the pH. This may seem
+obvious however is always good to confirm in the dataset that the realworld
+phenonomenas hold true.
 
 
 ```{r}
 
-df %>% ggplot(aes(x=log2(chlorides),y=alcohol)) + facet_wrap(~quality_group) + geom_jitter()
-
-
+df %>% ggplot(aes(x=total.sulfur.dioxide,y=alcohol,color=quality)) + facet_wrap(~quality_group) + geom_point() + scale_color_gradientn(colours = terrain.colors(8))
+ 
 
 ```
-
+Also following up with the sulfur impact, I was interested in seeing it compared
+to alcohol. There does not seems to exist a relationship between alchol and sulfur
+dioxide. Rather some sort of limitation, higher content wine seem to have no more
+than 200 of sulfur dioxide. On the quality side, high quality wines seem
+be concentrated in a narrower range of sulfur, a around above 10 of alchol content
+but besides does limit it could vari.
 
 ```{r}
 
 df %>% ggplot(aes(x=volatile.acidity,y=alcohol)) + facet_wrap(~quality_group) + geom_jitter()
-
-df %>% ggplot(aes(x=volatile.acidity,y=alcohol,color=quality)) + geom_jitter(alpha=0.2)
 
 ```
 
@@ -285,12 +298,15 @@ df %>% ggplot(aes(x=volatile.acidity,y=alcohol,color=quality)) + geom_jitter(alp
 ### Talk about some of the relationships you observed in this part of the \
 investigation. Were there features that strengthened each other in terms of \
 looking at your feature(s) of interest?
+Alcohol, density, pH.
 
 
 ### Were there any interesting or surprising interactions between features?
+Actually no. It seems very spread.
 
 ### OPTIONAL: Did you create any models with your dataset? Discuss the \
 strengths and limitations of your model.
+No.
 
 ------
 
@@ -307,6 +323,8 @@ make sure you justify why you chose each plot by describing what it shows.
 ### Plot One
 ```{r echo=FALSE, Plot_One}
 
+df %>% ggplot(aes(x=density,y=alcohol,color=quality_group)) + geom_point(alpha=0.3) + facet_wrap(~quality_group) + scale_x_continuous(limits = c(0.99,1.005))
+
 ```
 
 ### Description One
@@ -322,6 +340,11 @@ make sure you justify why you chose each plot by describing what it shows.
 
 ### Plot Three
 ```{r echo=FALSE, Plot_Three}
+
+
+df %>% ggplot(aes(x=total.sulfur.dioxide,y=alcohol,color=quality)) + facet_wrap(~quality_group) + geom_point() + scale_color_gradientn(colours = terrain.colors(8)) + geom_hline(yintercept = 10)  + geom_vline(xintercept = 50)
+#Double check this for the final graphs. 
+
 
 ```
 
