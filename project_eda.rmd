@@ -16,8 +16,8 @@ library(dplyr)
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
-setwd("C:/Users/Victor/Desktop/NAND/EDA/Final_Project") #<- Delete before Knittting
-setwd("~/Documents/GitHub/Final_Project") #For Mac
+#setwd("C:/Users/Victor/Desktop/NAND/EDA/Final_Project") #<- Delete before Knittting
+#setwd("~/Documents/GitHub/Final_Project") #For Mac
 df <- read.csv("wineQualityWhites.csv")
 ```
 
@@ -60,7 +60,7 @@ df %>% ggplot(aes(x=quality)) + geom_histogram()
 
 ```
 
-I was first interested in quality. The distribution is discrete, but this is
+I was first interested in quality. The variable is discrete, but this is
 expected since the evaluation was given from a discrete range. I will create an
 additional variable which will divide the wine in bad, average, and good based
 on the quality. The ranges will be from 0 to 4, 5 to 7 and then 8 to 10
@@ -81,7 +81,7 @@ help in plotting downstream.
 
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE}
 
 #To create a tidy dataset we use the gather function.
 df_tidy <- df %>% select(-quality_group) %>% gather(fixed.acidity,volatile.acidity, citric.acid,
@@ -100,11 +100,19 @@ They had different spreads and a little bit of skewness, but most seem pretty
 central. Residual sugar is a little skewed so I will have a look on that one.
 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 df %>% ggplot(aes(x=log(residual.sugar))) + geom_histogram(bins = 50)
 
 ```
+
+```{r}
+
+df %>% ggplot(aes(x=fixed.acidity)) + geom_histogram(bins = 50)
+
+
+```
+
 
 Using a logarithmic scale we can see actually almost two distributions with 
 a peak close to 0. We are going to have a closer look to this phenomena in
@@ -190,7 +198,7 @@ correlation, at least weaker than I expected. (I know chemically they are
 different compounds, but they usually have some relationship)
 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 df %>% ggplot(aes(x=fixed.acidity,y=citric.acid)) + geom_jitter(alpha=.5) 
 
@@ -202,7 +210,16 @@ Source (https://www.winespectator.com/drvinny/show/id/Difference-Between-Sulfite
 
 ```{r}
 
-df %>% ggplot(aes(x=fixed.acidity,y=pH)) + geom_jitter(alpha=.5) #strongest relationship
+#Add something about cholorides, acidity and sulfur.
+
+```
+
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+df %>% ggplot(aes(x=fixed.acidity,y=pH)) + geom_jitter(alpha=.5)
 
 ```
 Following the same principle of looking at different variables from the 
@@ -251,8 +268,7 @@ will do that.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
 
-df %>% ggplot(aes(x=log10(residual.sugar),y=density)) + geom_smooth(aes(color=quality_group)) 
-#+ facet_wrap(~quality_group)
+df %>% ggplot(aes(x=log10(residual.sugar),y=density)) + geom_smooth(aes(color=quality_group)) + scale_y_continuous(limits = c(0.985,1.005))
 
 ```
 I was first curios about residual sugar and density since both showed some sort
@@ -261,36 +277,35 @@ seems to be some sort of proportional relationship between density and the log
 of residual sugar, and it seems similar across different wine groups. The fact
 that the average group goes farther is simply more variability within that group.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 df %>% ggplot(aes(x=fixed.acidity,y=citric.acid,color=pH)) +  geom_jitter(alpha=0.4) + scale_color_gradientn(colours = terrain.colors(10))
 
 ```
 Also following up with pH, as expected there is a relationship between both
 acidities and pH. The higher the acidity de lower the pH. This may seem
+
 obvious however is always good to confirm in the dataset that the realworld
 phenonomenas hold true.
 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 df %>% ggplot(aes(x=total.sulfur.dioxide,y=alcohol,color=quality)) + facet_wrap(~quality_group) + geom_point() + scale_color_gradientn(colours = terrain.colors(8))
- 
 
 ```
 Also following up with the sulfur impact, I was interested in seeing it compared
-to alcohol. There does not seems to exist a relationship between alchol and sulfur
+to alcohol. There does not seems to exist a relationship between alcohol and sulfur
 dioxide. Rather some sort of limitation, higher content wine seem to have no more
 than 200 of sulfur dioxide. On the quality side, high quality wines seem
 be concentrated in a narrower range of sulfur, a around above 10 of alchol content
-but besides does limit it could vari.
+but besides does limit it could vary.
 
 ```{r}
 
-df %>% ggplot(aes(x=volatile.acidity,y=alcohol)) + facet_wrap(~quality_group) + geom_jitter()
+#add quality with chloride, pH or other stuff.
 
 ```
-
 
 
 # Multivariate Analysis
@@ -306,7 +321,7 @@ Actually no. It seems very spread.
 
 ### OPTIONAL: Did you create any models with your dataset? Discuss the \
 strengths and limitations of your model.
-No.
+No model was created.
 
 ------
 
@@ -321,34 +336,52 @@ units), and good aesthetic choices (e.g. color, transparency). After each plot,
 make sure you justify why you chose each plot by describing what it shows.
 
 ### Plot One
-```{r echo=FALSE, Plot_One}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_One}
 
-df %>% ggplot(aes(x=density,y=alcohol,color=quality_group)) + geom_point(alpha=0.3) + facet_wrap(~quality_group) + scale_x_continuous(limits = c(0.99,1.005))
+df %>% ggplot(aes(x=density,y=alcohol,color=quality_group)) + geom_point(alpha=0.5) + facet_wrap(~quality_group) + scale_x_continuous(limits = c(0.99,1.005),breaks = seq(0.99,1.0,0.005)) + ggtitle("Alcohol vs Density grouped by quality group") + xlab("Density (g / cm^3)") + ylab("Alcohol (% volume)")
 
 ```
 
 ### Description One
+Most good wines seem to have at least 10% alcohol by volume and have a narrower
+band of density between 0.99 g/cm^3 and 1 g/cm^3 . For the other groups
+the variability seems much broader. In other words, good wines seem to have 
+some specific limits of density and alcohol. Another reason of this graph is to
+show the relationship between alcohol and density. The higher the alcohol content
+the lower the density, which makes sense because of the lower density of alcohol itself
+compared to water. 
+
 
 
 ### Plot Two
-```{r echo=FALSE, Plot_Two}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Two}
+
+df %>% ggplot(aes(x=log10(residual.sugar),y=density,color=quality_group)) +  scale_x_continuous(limits = c(0,1.5)) + scale_y_continuous(limits = c(0.985,1.005)) + ggtitle("Log10 Residual Sugar vs Density") + ylab("Density (g / cm^3)") + xlab("Log10 Residual Sugar (g / dm^3)")  + geom_smooth()
 
 ```
 
 ### Description Two
-
+The residual sugars bimodal distribution go my attention before. This graphs
+shows how the residual sugar is related to density across all wine quality
+groups. However there does not seems to be a some parameters that apply only
+to good quality wines when it comes to the residual sugar.
 
 ### Plot Three
-```{r echo=FALSE, Plot_Three}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Three}
 
 
-df %>% ggplot(aes(x=total.sulfur.dioxide,y=alcohol,color=quality)) + facet_wrap(~quality_group) + geom_point() + scale_color_gradientn(colours = terrain.colors(8)) + geom_hline(yintercept = 10)  + geom_vline(xintercept = 50)
+df %>% ggplot(aes(x=total.sulfur.dioxide,y=log10(chlorides),color=quality_group)) + geom_jitter(alpha=0.2) 
+#+ scale_color_gradientn(colours = terrain.colors(10)) + theme_dark()
+#+ geom_hline(yintercept = 11,linetype= 2,alpha=0.7,color="blue")  
+#+ scale_x_continuous(limits = c(0,300))
 #Double check this for the final graphs. 
-
+#+ geom_vline(xintercept = 200,linetype= 2,alpha=0.7,color="blue")
 
 ```
 
 ### Description Three
+Sulfur seemed the other important variable regarding 
+
 
 ------
 
@@ -364,6 +397,3 @@ the best path always. Understanding relationships between variables could help
 in feature selection, dropping variables that might not be interesting.
 
 
-
-> **Tip**: Don't forget to remove this, and the other **Tip** sections before
-saving your final work and knitting the final report!
