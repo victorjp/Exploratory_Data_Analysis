@@ -1,0 +1,6 @@
+This list is not complete since I do a lot of on the go referencing:
+1. https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf -> good resources for ggplot.
+2- https://rpubs.com/bradleyboehmke/data_wrangling -> for the gather function in builiding the tidy data set.
+3- https://rmarkdown.rstudio.com/lesson-3.html -> to control the code chunks code and results.
+4. https://www.winespectator.com/drvinny/show/id/Difference-Between-Sulfites-Sulfates-Wine-54706 -> background about sulfate content in wines.
+5. https://wine.lovetoknow.com/wiki/List_of_Sweet_Red_Wines -> Im a beer guy so needed to understand a little bit about wine.
