@@ -4,7 +4,7 @@ White Wines by Victor Jaen
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
 
 # Loading libraries
-library(tidyverse) #this one auomatically loads ggplot and dplyr
+library(tidyverse)
 library(ggplot2)
 library(dplyr)
 
@@ -16,9 +16,8 @@ library(dplyr)
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
-#setwd("C:/Users/Victor/Desktop/NAND/EDA/Final_Project") #<- Delete before Knittting
-#setwd("~/Documents/GitHub/Final_Project") #For Mac
 df <- read.csv("wineQualityWhites.csv")
+
 ```
 
 This data set contains several metrics about white wines and a qualitative 
@@ -29,13 +28,6 @@ be exploring if within this variable, some relationship exist and hypothesize
 why this could be.
 
 # Univariate Plots Section
-
-> **Tip**: In this section, you should perform some preliminary exploration of
-your dataset. Run some summaries of the data and create univariate plots to
-understand the structure of the individual variables in your dataset. Don't
-forget to add a comment after each plot or closely-related group of plots!
-There should be multiple code chunks and text sections; the first one below is
-just to help you get started.
 
 ```{r echo=FALSE, Univariate_Plots}
 
@@ -79,16 +71,14 @@ table(df$quality_group)
 The majority of the wines are average as shown in the histogram. This will
 help in plotting downstream.
 
-
-
 ```{r message=FALSE, warning=FALSE}
 
 #To create a tidy dataset we use the gather function.
-df_tidy <- df %>% select(-quality_group) %>% gather(fixed.acidity,volatile.acidity, citric.acid,
+df_tidy <- df %>% select(-quality_group) %>% gather(key,values,fixed.acidity,volatile.acidity, citric.acid,
                         residual.sugar,chlorides,free.sulfur.dioxide,
                         total.sulfur.dioxide,density,pH,sulphates,alcohol,
                         quality)
-colnames(df_tidy) <- c("X","key","values")
+
 df_tidy %>% ggplot(aes(x=values)) + geom_histogram(bins = 50) + facet_wrap(~key, scales= "free")
 
 ```
@@ -97,8 +87,8 @@ I wanted to have quick distribution of all variables. So using the gather
 function from tidy verse, I created a tidy data set to make the use of
 ggplot easier.Most of the variables seem to be normally distributed. 
 They had different spreads and a little bit of skewness, but most seem pretty 
-central. Residual sugar is a little skewed so I will have a look on that one.
-
+central. I will take a further look on a couple of variables that I think
+need closer examination.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -106,17 +96,38 @@ df %>% ggplot(aes(x=log(residual.sugar))) + geom_histogram(bins = 50)
 
 ```
 
+Residual sugar was very skewed to one side. Using a logarithmic scale we can see 
+actually almost two distributions with peaks around 0.5 and 2. We are going to
+have a closer look to this phenomena in the coming sections.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+df %>% ggplot(aes(x=chlorides)) + geom_histogram(bins=50) + scale_x_continuous(limits = c(0,0.1))
+
+```
+Examining closer the chlorides variable shows a fairly normal distribution. 
+The median seems to be at 0.05.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+df %>% ggplot(aes(x=alcohol)) + geom_histogram(bins = 75)
+
+```
+The alcohol variable shows are sort of discrete behavior. It seems that
+the variable simply is missing some specific values, they are randomly
+distributed. Thinking why this could be my guess is a function of the chemical
+test done to measure this variable or the instruments used.
+
 ```{r}
 
-df %>% ggplot(aes(x=fixed.acidity)) + geom_histogram(bins = 50)
-
+df %>% ggplot(aes(x=pH)) + geom_histogram(bins = 50)
 
 ```
 
+Observing pH now that shows a couple of different peaks but still is normally
+distrubted around 3.15 pH with two medians. 
 
-Using a logarithmic scale we can see actually almost two distributions with 
-a peak close to 0. We are going to have a closer look to this phenomena in
-the coming sections.
 
 # Univariate Analysis
 
@@ -132,6 +143,7 @@ Is there any sweet spot in this variables explained in good wine quality.
 
 ### What other features in the dataset do you think will help support your \
 #investigation into your feature(s) of interest?
+All the other variables. At this stage is to early to disregard any variable.
 
 ### Did you create any new variables from existing variables in the dataset?
 
@@ -141,7 +153,7 @@ better trends in the following plots.
 
 ### Of the features you investigated, were there any unusual distributions? \
 Not really. Only the residual sugar, a little bit skewed but with a logarithmic
-transformation, we saw that there seems to be to different distributions for 
+transformation, we saw that there seems to be two different distributions for 
 that variable.
 
 ### Did you perform any operations on the data to tidy, adjust, or change the form \
@@ -164,8 +176,8 @@ df %>% ggplot(aes(x=free.sulfur.dioxide,y=total.sulfur.dioxide)) + geom_jitter(a
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-df %>% ggplot(aes(x=as.factor(quality),y=density)) + geom_boxplot(alpha=.5) #the higher de quality the more uniform, could be a function of qty
-
+df %>% ggplot(aes(x=as.factor(quality),y=density)) + geom_boxplot(alpha=.5) + 
+  scale_y_continuous(limits = c(0.98,1.01))
 
 ```
 
@@ -177,10 +189,8 @@ created before.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-df %>% ggplot(aes(x=quality_group,y=density)) + geom_boxplot(alpha=.5) 
-# it seems that the higher de quality the more uniform, could be a function of 
-# sample size. There are less "good" quality wines
-
+df %>% ggplot(aes(x=quality_group,y=density)) + geom_boxplot(alpha=.5) + 
+  scale_y_continuous(limits = c(0.98,1.01))
 
 ```
 Yes, it seems that good wines have lower density than other ones.
@@ -195,7 +205,7 @@ df %>% ggplot(aes(x=total.sulfur.dioxide,y=sulphates)) + geom_point(alpha=.5)
 Looking at other variables, I was curious if total sulfur dioxide had some
 relationship with Sulphates. In this graphs there seems to be a very weak
 correlation, at least weaker than I expected. (I know chemically they are
-different compounds, but they usually have some relationship)
+different compounds, but they should have some relationship)
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -203,36 +213,55 @@ different compounds, but they usually have some relationship)
 df %>% ggplot(aes(x=fixed.acidity,y=citric.acid)) + geom_jitter(alpha=.5) 
 
 ```
+
 Looking at the acidity variables, there seems to be some relationship
 between the citric acid and the fixed acidity. Chemically Im not sure what
 could be the mechanism happening behind but this seems to be expected.
 Source (https://www.winespectator.com/drvinny/show/id/Difference-Between-Sulfites-Sulfates-Wine-54706)
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-#Add something about cholorides, acidity and sulfur.
+df %>% ggplot(aes(x=chlorides,y=fixed.acidity)) + geom_jitter(alpha=.5) + 
+  scale_x_continuous(limits=c(0,0.1))
+
+```
+Exploring othe variables, chlorides does not seem to have any relation with
+fixed acidity.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+df %>% ggplot(aes(x=chlorides,y=free.sulfur.dioxide)) + geom_jitter(alpha=.5) + scale_x_continuous(limits = c(0,0.1)) + scale_y_continuous(limits=c(0,150))
+
+```
+Similar as the previous graph, there is not much going on between chlorides and
+free sulfur dioxide.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+df %>% ggplot(aes(x=quality_group,y=chlorides)) + geom_boxplot() + scale_y_continuous(limits = c(0,0.1))
 
 ```
 
-
-
+If chlorides are not showing any pattern with other variables I thought it 
+might worth to compare it to the output variable. And indeed as density
+it seems to be a pattern with good wines having lower chlorides levels.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 df %>% ggplot(aes(x=fixed.acidity,y=pH)) + geom_jitter(alpha=.5)
 
 ```
-Following the same principle of looking at different variables from the 
-output, I wanted to confirm the relationship between pH an acidity. From
-This graph we can show that there is a decent relationship. 
+Continuing exploring different variables from the output, I wanted to confirm 
+the relationship between pH an acidity. From This graph we can show that there 
+s a decent relationship. 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 cor(df$fixed.acidity,df$pH)
 
 ```
 Running the correlation function we see that the value is actually rather low,
--0.42.
+-0.42. Possibly some outliers are impacting this value.
 
 # Bivariate Analysis
 
@@ -250,22 +279,16 @@ other wines.
 ### Did you observe any interesting relationships between the other features \
 
 The acidity variables seems to have some relationship. However the sulfate
-and sulphates variables does not seem to be related.
+and sulphates variables does not seem to be related. Chlorides didn't show
+relationship with other variables.
 
 ### What was the strongest relationship you found?
 
 Density seems to have an inverse relationship with wine quality. Good wines, 
-above 7, have lower densities than the average and bad wines.
+above 7, have lower densities than the average and bad wines. Chlorides also
+seem to show strong relationship with quality.
 
 # Multivariate Plots Section
-
-> **Tip**: Now it's time to put everything together. Based on what you found in
-the bivariate plots section, create a few multivariate plots to investigate
-more complex interactions between variables. Make sure that the plots that you
-create here are justified by the plots you explored in the previous section. If
-you plan on creating any mathematical models, this is the section where you
-will do that.
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
 
 df %>% ggplot(aes(x=log10(residual.sugar),y=density)) + geom_smooth(aes(color=quality_group)) + scale_y_continuous(limits = c(0.985,1.005))
@@ -284,7 +307,6 @@ df %>% ggplot(aes(x=fixed.acidity,y=citric.acid,color=pH)) +  geom_jitter(alpha=
 ```
 Also following up with pH, as expected there is a relationship between both
 acidities and pH. The higher the acidity de lower the pH. This may seem
-
 obvious however is always good to confirm in the dataset that the realworld
 phenonomenas hold true.
 
@@ -301,19 +323,22 @@ than 200 of sulfur dioxide. On the quality side, high quality wines seem
 be concentrated in a narrower range of sulfur, a around above 10 of alchol content
 but besides does limit it could vary.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-#add quality with chloride, pH or other stuff.
+df %>% ggplot(aes(x=chlorides,y=density)) + geom_point(aes(color=quality_group)) +  facet_wrap(~quality_group) + scale_x_continuous(limits = c(0,0.1)) +
+   scale_y_continuous(limits = c(0.98,1.01)) 
 
 ```
 
+Closing up density and chlorides show a relationship between them relatively
+similar among quality groups.
 
 # Multivariate Analysis
 
 ### Talk about some of the relationships you observed in this part of the \
 investigation. Were there features that strengthened each other in terms of \
 looking at your feature(s) of interest?
-Alcohol, density, pH.
+Alcohol, density, pH and chlorides seem to be the most important ones.
 
 
 ### Were there any interesting or surprising interactions between features?
@@ -327,14 +352,6 @@ No model was created.
 
 # Final Plots and Summary
 
-> **Tip**: You've done a lot of exploration and have built up an understanding
-of the structure of and relationships between the variables in your dataset.
-Here, you will select three plots from all of your previous exploration to
-present here as a summary of some of your most interesting findings. Make sure
-that you have refined your selected plots for good titling, axis labels (with
-units), and good aesthetic choices (e.g. color, transparency). After each plot,
-make sure you justify why you chose each plot by describing what it shows.
-
 ### Plot One
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_One}
 
@@ -344,56 +361,56 @@ df %>% ggplot(aes(x=density,y=alcohol,color=quality_group)) + geom_point(alpha=0
 
 ### Description One
 Most good wines seem to have at least 10% alcohol by volume and have a narrower
-band of density between 0.99 g/cm^3 and 1 g/cm^3 . For the other groups
-the variability seems much broader. In other words, good wines seem to have 
-some specific limits of density and alcohol. Another reason of this graph is to
-show the relationship between alcohol and density. The higher the alcohol content
-the lower the density, which makes sense because of the lower density of alcohol itself
-compared to water. 
+band of density between 0.99 g/cm^3 and 1 g/cm^3. For the other groups, the 
+variability seems much broader. In other words, good wines seem to have some 
+specific limits of density and alcohol. Another reason for this graph is to
+show the relationship between alcohol and density. The higher the alcohol
+content the lower the density, which makes sense because of the lower density of 
+alcohol itself compared to water. 
 
 
 
 ### Plot Two
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Two}
 
-df %>% ggplot(aes(x=log10(residual.sugar),y=density,color=quality_group)) +  scale_x_continuous(limits = c(0,1.5)) + scale_y_continuous(limits = c(0.985,1.005)) + ggtitle("Log10 Residual Sugar vs Density") + ylab("Density (g / cm^3)") + xlab("Log10 Residual Sugar (g / dm^3)")  + geom_smooth()
+df %>% ggplot(aes(x=log10(residual.sugar),y=density,color=quality_group)) +  scale_x_continuous(limits = c(0,1.5)) + scale_y_continuous(limits = c(0.985,1.005)) + ggtitle("Residual Sugar vs Density") + ylab("Density (g / cm^3)") + xlab("Log10 Residual Sugar (g / dm^3)")  + geom_smooth()
 
 ```
 
 ### Description Two
-The residual sugars bimodal distribution go my attention before. This graphs
+The residual sugars bimodal distribution got my attention before. This graphs
 shows how the residual sugar is related to density across all wine quality
-groups. However there does not seems to be a some parameters that apply only
+groups. However there does not seems to be a pattern that applies only
 to good quality wines when it comes to the residual sugar.
 
 ### Plot Three
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Three}
 
-
-df %>% ggplot(aes(x=total.sulfur.dioxide,y=log10(chlorides),color=quality_group)) + geom_jitter(alpha=0.2) 
-#+ scale_color_gradientn(colours = terrain.colors(10)) + theme_dark()
-#+ geom_hline(yintercept = 11,linetype= 2,alpha=0.7,color="blue")  
-#+ scale_x_continuous(limits = c(0,300))
-#Double check this for the final graphs. 
-#+ geom_vline(xintercept = 200,linetype= 2,alpha=0.7,color="blue")
+df %>% ggplot(aes(x=log10(chlorides),y=density)) + geom_jitter(aes(color=total.sulfur.dioxide),alpha=0.5)  + 
+   scale_y_continuous(limits = c(0.98,1.01)) + ggtitle("Chlorides vs Density") + ylab("Density (g / cm^3)") + xlab("Log10 Chlorides (sodium chloride - g / dm^3)") + scale_color_gradientn(colours = terrain.colors(8)) +facet_wrap(~quality_group)
 
 ```
 
 ### Description Three
-Sulfur seemed the other important variable regarding 
-
+Finally chlorides, density and total sulfur signaled relationships across the
+analysis. This graph shows a certain pattern between the three. The higher the
+density and the chlorides content the higer the sulfur. Showing this behavior
+among the three quality groups we observe that the relationship holds true. We
+could very cautiously say that the better the group the less dispersion.
 
 ------
 
 # Reflection
 
-> **Tip**: Here's the final step! Reflect on the exploration you performed and
-the insights you found. What were some of the struggles that you went through?
-What went well? What was surprising? Make sure you include an insight into
-future work that could be done with the dataset.
-
 Exploring all variables directly with the output variable is not necessary
 the best path always. Understanding relationships between variables could help
 in feature selection, dropping variables that might not be interesting.
+After finishing the project I also realized the importance of creating a story.
+In this case was more organic than actually planned, but perhaps if beforehand
+I set some sort of structure the flow of graphs and analysis will probably be 
+better and also for the reader will be easier to understand.
+
+With exploratory analysis the possibilities are endless, being able to differ
+whats noise from what is actually important is the key, and is not that easy.
 
 
